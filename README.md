@@ -246,11 +246,11 @@ Und noch einmal im Detail:
 1. Zuerst wird der Entrypoint festgelegt. Der Websocket hört also nur auf Port *443*.
 2. Danach wird der Host inklusive Pfad definiert. Alle Anfragen an das Stammverzeichnis (keine Sub-Pfade) der Domain `<your.domain.tld>` werden an diesen Container weitergeleitet.
 3. Verschlüsselung wird aktiviert.
-4. Als Zertifikatprovider wird letsencrypt ausgewählt.
+4. Als Zertifizierungsstelle wird *letsencrypt* ausgewählt.
 5. Die *middlewares* Zeile aktiviert die Passwortabfrage die unter `shauth` definiert ist. Dazu später mehr.
 `routers.sh.service`verweist auf den zuständigen service *sh*. Dies ist hier notwendig weil 2 services existerien.
 6. Der *service* `sh` zeigt auf den zuständigen Port innerhalb des Docker Images.  *2424* ist der Websocket Port. Diese Angabe ist immer dann notwendig, wenn ein Container mehr als einen Port freigibt.
- > Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
+ > Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die Beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
 
 ```
       # admin interface "https://<your.domain.tld>/admin/"
