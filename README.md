@@ -2,18 +2,18 @@
 
 ## Beschreibung
 
-Dieses HowTo zeigt, wie man Traefik für SmarthomeNG und smartVISU als Reverse Proxy konfiguriert.
+Dieses HowTo zeigt, wie man den Reverse Proxy [Traefik](https://doc.traefik.io/traefik/) für [SmarthomeNG](https://www.smarthomeng.de/) und [smartVISU](https://www.smartvisu.de/) konfiguriert.
 
 ## **Warnung**
 
-Server ins Internet zu stellen, in diesem Falle "DockerHOST", ist immer ein Sicherheitsrisiko. Die verwendete Software muss immer aktuell gehalten werden um bekannte Sicherheitslücken zu schließen. Mögliche Konfigurationsfehler zu erkennen bzw. für Sicherheitshinweise die über dieses HowTo hinausgehen kann man Online Scanner nutzen \(z.B. [SSL Labs](https://www.ssllabs.com/ssltest/)\).
+Server ins Internet zu stellen ist immer ein Sicherheitsrisiko. Die verwendete Software muss immer aktuell gehalten werden um bekannte Sicherheitslücken zu schließen. Online Scanner \(z.B. [SSL Labs](https://www.ssllabs.com/ssltest/)\) können helfen mögliche Konfigurationsfehler zu erkennen bzw. Sicherheitshinweise liefern, die über dieses HowTo hinausgehen.
 
 ## Voraussetzungen
 
-1. Du hast einen Rechner (*DockerHOST*) auf dem Docker und Docker-Compose laufen.
-2. Der *DockerHOST* muss aus dem Internet auf Port 443 erreichbar sein. vorgeschaltete Router oder Firewalls sind entsprechend konfiguriert.
-3. Du besitzt eine Domain (*your.domain.tld*) die auf den DockerHOST zeigt. Grundsätzlich sind hier auch dynamische Domains wie z.B. von DynDNS möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
-4. Du besitzt eine gültige E-Mail Adresse.
+1. Ein Rechner bzw. Server (`<DockerHOST>`) auf dem Docker und Docker-Compose laufen.
+2. `<DockerHOST>` muss aus dem Internet auf Port 443 erreichbar sein. Vorgeschaltete Router oder Firewalls sind entsprechend konfiguriert.
+3. Eine Domain (`<your.domain.tld>`) die auf `<DockerHOST>` zeigt. Grundsätzlich sind hier auch dynamische Domains \(z.B. von DynDNS\) möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
+4. Eine gültige E-Mail Adresse (`<your.email.tld>`).
 5. Grundverständnis für docker-compose und YAML Syntax setze ich vorraus.
 
 ## Vorbereitungen
@@ -38,7 +38,7 @@ docker network create -d bridge traefik-net
 
 ### Die Traefik Konfiguration
 
-Zuerst öffnen wir die Datei `traefik/docker-compose.yaml` mit einem Editor deiner Wahl und kopieren folgenden Inhalt hinein:
+Zuerst öffnest du die Datei `traefik/docker-compose.yaml` mit einem Editor deiner Wahl und kopierst folgenden Inhalt hinein:
 ```
 version: "3"
 
@@ -82,6 +82,9 @@ services:
       - ./volumes/letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
 ```
+
+> `<your@email.tld>` muss durch eine gültige E-Mail Adresse ersetzt werden.
+
 Ziemlich viel, oder? Die Traefik Konfig erkläre ich gleich noch mal Schritt für Schritt. 
 
 ```
@@ -96,7 +99,7 @@ services:
   traefik:
     image: "traefik:v2.6"
 ```
-Hier wird der Service `traefik` definiert. Als Basis dient das Image `traefik` in der Version `v2.6` welches vom Dockerhub geladen wird. Häufig wird für die Version (bzw. tag) `latest` verwendet. Für Traefik empfehle ich es nicht, da neuere Traefik Versionen häufig inkompatible Änderungen aufweisen.
+Hier wird der Service `traefik` definiert. Als Basis dient das Image `traefik` in der Version `v2.6` welches vom [DockerHub](https://hub.docker.com/) geladen wird. Häufig wird für die Version (bzw. tag) `latest` verwendet. Für Traefik empfehle ich es nicht, da neuere Traefik Versionen oft inkompatible Änderungen aufweisen.
 
 ```
     command:
@@ -115,7 +118,7 @@ Zur Fehlersuche kann man das Loglevel auf `DEBUG` setzen. Später sollte man es 
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik-net"
 ```
-1. Die dynamsiche Traefik Konfig wird später aus Docker Labels der Container bezogen.
+1. Die dynamsiche Traefik Konfiguration wird später aus *Labels* der Container bezogen.
 2. Es muss explizit für jeden Container aktiviert werden.
 3. Die relevanten Container sind am `traefik-net` angebunden.
 
@@ -129,8 +132,8 @@ Zur Fehlersuche kann man das Loglevel auf `DEBUG` setzen. Später sollte man es 
 ```
 1. Erster Entrypoint ist Port *80* und bekommt den Namen `web`.
 2. Sämtliche Verbindungen werden vom Entrypoint `web` auf den Entrypoint `websecure` umgeleitet.
-3. Dabei wird das Schema *https* verwendet. Somit werden aus http Verbindungen - https Verbindungen.
-4. Der Port für den Entrypoint Namens *websecure* ist *443*.
+3. Dabei wird das Schema `https` verwendet. Somit werden aus *http* Verbindungen - *https* Verbindungen.
+4. Der Port für den Entrypoint Namens `websecure` ist *443*.
 Statt `web`und `websecure` könnte man auch `http` bzw. `https` als Namen wählen. Ich finde es aber aufgrund der Namensgleicheit zum *scheme* `https` gerade für Anfänger irreführend. Ausserdem behandeln wir ja später auch *ws* bzw. *wss* Verbindungen für den Websocket damit.
 
 ```
@@ -140,7 +143,8 @@ Statt `web`und `websecure` könnte man auch `http` bzw. `https` als Namen wähle
       - "--certificatesresolvers.letsencrypt.acme.email=<your@email.tld>"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
 ```
-Die Let's Encrypt Konfiguration. Die email `<your@email.tld>` muss durch eine gültige Mail Adresse ersetzt werden. Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch aktivieren der `caserver` Zeile leitet man die Zertifikat Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man aber erkennen ob alles funktioniert. Für den regulären Betrieb muss man die Zeile natürlich auskommentieren.
+Die Let's Encrypt Konfiguration.
+Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch aktivieren der `caserver` Zeile leitet man die Zertifikat Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man aber erkennen ob alles funktioniert. Für den regulären Betrieb muss man die Zeile natürlich auskommentieren.
 Ich habe mich für die *TLS Challenge* entschieden, da hierdurch die Kommunikation mit Let's Encrypt ebenfalls verschlüsselt abläuft und ich nur den Port 443 ins Netz öffnen muss. Darüber hinaus gibt es noch die *http Challenge* und die *dns Challenge*.
 
 
@@ -154,7 +158,7 @@ Dies aktiviert das Traefik Dashboard. Dort kann man die aktive Konfiguration bzw
 
 ### Die SmarthomeNG Konfiguration
 
-Als nächstes öffnen wir die Datei `shng/docker-compose.yaml` mit einem Editor deiner Wahl und kopieren folgenden Inhalt hinein:
+Als nächstes öffnest du die Datei `shng/docker-compose.yaml` mit einem Editor deiner Wahl und kopierst folgenden Inhalt hinein:
 ```
 version: "3"
 
