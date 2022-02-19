@@ -1,0 +1,69 @@
+version: "3"
+
+#https://www.smarthomeng.de/
+#https://www.smartvisu.de/
+
+networks:
+  traefik-net:
+    external: true
+
+services:
+  shng:
+    image: sagl/shng:visu
+    restart: "unless-stopped"
+    environment:
+      - TZ=Europe/Berlin
+    labels:
+      - "traefik.enable=true"
+      
+      # Websocket "wss://<your.domain.tld>/"
+      - "traefik.http.routers.sh.entrypoints=websecure"
+      #- "traefik.http.routers.sh.rule=Host(`sh.thi0n.de`) && Path(`/`)"
+      - "traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)"
+      - "traefik.http.routers.sh.tls=true"
+      - "traefik.http.routers.sh.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sh.middlewares=shauth"
+      - "traefik.http.routers.sh.service=sh"
+      - "traefik.http.services.sh.loadbalancer.server.port=2424"
+      
+      # admin interface "https://<your.domain.tld>/admin/"
+      - "traefik.http.routers.shadmin.entrypoints=websecure"
+      #- "traefik.http.routers.shadmin.rule=Host(`sh.thi0n.de`)"
+      - "traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)"
+      - "traefik.http.routers.shadmin.tls=true"
+      - "traefik.http.routers.shadmin.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.shadmin.middlewares=shauth"
+      - "traefik.http.routers.shadmin.service=shadmin"
+      - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
+      
+      # digestauth Example: user="test", pw="test" <- unbedingt ändern!
+      # HINT: Generate Hash with echo -n "USER:REALM:PASSWORD" | md5sum
+      - "traefik.http.middlewares.shauth.digestauth.users=test:SHNG:2eb7c3ae89f6812c8008aef4df7dc364"
+      - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
+      - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
+    volumes:
+      - ./volumes/shng:/mnt
+    networks:
+      - traefik-net
+
+  smartvisu:
+    image: php:8.0-apache
+    restart: unless-stopped
+    #hostname: <your.domain.tld>
+    depends_on:
+      - shng
+    labels:
+      - "traefik.enable=true"
+      
+      # smartVISU web interface "https://<your.domain.tld>/smartvisu/"
+      - "traefik.http.routers.sv.entrypoints=websecure"
+      #- "traefik.http.routers.sv.rule=Host(`<your.domain.tld>`) && PathPrefix(`/smartvisu`)"
+      - "traefik.http.routers.sv.rule=Host(`sh.thi0n.de`) && PathPrefix(`/smartvisu`)"
+      - "traefik.http.routers.sv.tls=true"
+      - "traefik.http.routers.sv.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sv.middlewares=shauth"
+      - "traefik.http.services.sv.loadbalancer.server.port=80"
+    volumes:
+      - ./volumes/html:/var/www/html
+    networks:
+      - traefik-net

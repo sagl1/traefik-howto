@@ -1,0 +1,46 @@
+version: "3"
+
+#https://doc.traefik.io/traefik/
+#https://letsencrypt.org/de/
+
+# docker network create -d bridge traefik-net
+networks:
+  traefik-net:
+    external: true
+
+services:
+  traefik:
+    image: "traefik:v2.6"
+    command:
+      - "--log.level=ERROR"
+      #- "--log.level=DEBUG"
+      
+      # provider "docker"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik-net"
+      
+      # entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      #- "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      
+      # lets encrypt
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+#      - "--certificatesresolvers.letsencrypt.acme.email=<your@email.tld>"
+      - "--certificatesresolvers.letsencrypt.acme.email=sglaess@gmx.de"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      
+      # Traefik dashboard "http://<yourhost>:8080/"
+      - "--api.insecure=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - traefik-net
+    volumes:
+      - ./volumes/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
