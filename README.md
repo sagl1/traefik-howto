@@ -224,7 +224,8 @@ services:
     networks:
       - traefik-net
 ```
-`<your.domain.tld> muss durch die eigene Domain ersetzt werden.`
+
+> `<your.domain.tld>` muss durch die eigene Domain ersetzt werden.
 
 Und noch einmal im Detail:
 ```
