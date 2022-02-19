@@ -6,15 +6,15 @@ Dieses HowTo zeigt, wie man den Reverse Proxy [Traefik](https://doc.traefik.io/t
 
 ## **Warnung**
 
-Server ins Internet zu stellen ist immer ein Sicherheitsrisiko. Die verwendete Software muss immer aktuell gehalten werden um bekannte Sicherheitslücken zu schließen. Online Scanner \(z.B. [SSL Labs](https://www.ssllabs.com/ssltest/)\) können helfen mögliche Konfigurationsfehler zu erkennen bzw. Sicherheitshinweise liefern, die über dieses HowTo hinausgehen.
+Server ins Internet zu stellen ist immer ein Sicherheitsrisiko. Die verwendete Software muss immer aktuell gehalten werden, um bekannte Sicherheitslücken zu schließen. Online Scanner \(z.B. [SSL Labs](https://www.ssllabs.com/ssltest/)\) können helfen mögliche Konfigurationsfehler zu erkennen bzw. Sicherheitshinweise liefern, die über dieses HowTo hinausgehen.
 
 ## Voraussetzungen
 
 1. Ein Rechner bzw. Server (`<DockerHOST>`) auf dem Docker und Docker-Compose laufen.
 2. `<DockerHOST>` muss aus dem Internet auf Port 443 erreichbar sein. Vorgeschaltete Router oder Firewalls sind entsprechend konfiguriert.
-3. Eine Domain (`<your.domain.tld>`) die auf `<DockerHOST>` zeigt. Grundsätzlich sind hier auch dynamische Domains \(z.B. von DynDNS\) möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
+3. Eine Domain (`<your.domain.tld>`), die auf `<DockerHOST>` zeigt. Grundsätzlich sind hier auch dynamische Domains \(z.B. von DynDNS\) möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
 4. Eine gültige E-Mail Adresse (`<your.email.tld>`).
-5. Grundverständnis für docker-compose und YAML Syntax setze ich vorraus.
+5. Grundverständnis für docker-compose und YAML Syntax setze ich Voraus.
 
 ## Vorbereitungen
 
@@ -92,14 +92,14 @@ networks:
   traefik-net:
     external: true
 ```
-Das Netzwerk `traefik-net` ist als externes Netzwerk definiert. Es wird also beim starten und stoppen des Containers nicht erstellt bzw. zerstört, sondern muss schon vorhanden sein. Hatten wir ja als Vorbereitung schon angelegt.
+Das Netzwerk `traefik-net` ist als externes Netzwerk definiert. Es wird also beim Starten und Stoppen des Containers nicht erstellt bzw. zerstört, sondern muss schon vorhanden sein. Hatten wir ja als Vorbereitung schon angelegt.
 
 ```
 services:
   traefik:
     image: "traefik:v2.6"
 ```
-Hier wird der Service `traefik` definiert. Als Basis dient das Image `traefik` in der Version `v2.6` welches vom [DockerHub](https://hub.docker.com/) geladen wird. Häufig wird für die Version (bzw. tag) `latest` verwendet. Für Traefik empfehle ich es nicht, da neuere Traefik Versionen oft inkompatible Änderungen aufweisen.
+Hier wird der Service `traefik` definiert. Als Basis dient das Image `traefik` in der Version `v2.6`, welches vom [DockerHub](https://hub.docker.com/) geladen wird. Häufig wird für die Version (bzw. tag) `latest` verwendet. Für Traefik empfehle ich es nicht, da neuere Traefik Versionen oft inkompatible Änderungen aufweisen.
 
 ```
     command:
@@ -145,7 +145,7 @@ Statt `web`und `websecure` könnte man auch `http` bzw. `https` als Namen wähle
 ```
 Die Let's Encrypt Konfiguration.
 
-Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch aktivieren der `caserver` Zeile leitet man die Zertifikat Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man aber erkennen ob alles funktioniert. Für den regulären Betrieb muss die Zeile natürlich wieder auskommentiert werden.
+Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch Aktivieren der `caserver` Zeile leitet man die Zertifikat-Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man erkennen, ob alles funktioniert. Für den regulären Betrieb muss die Zeile natürlich wieder auskommentiert werden.
 Ich habe mich für die *TLS Challenge* entschieden, da hierdurch die Kommunikation mit Let's Encrypt ebenfalls verschlüsselt abläuft und ich nur den Port 443 ins Netz öffnen muss. Darüber hinaus gibt es noch die *http Challenge* und die *dns Challenge*.
 
 
@@ -248,8 +248,8 @@ Und noch einmal im Detail:
 3. Verschlüsselung wird aktiviert.
 4. Als Zertifizierungsstelle wird *letsencrypt* ausgewählt.
 5. Die *middlewares* Zeile aktiviert die Passwortabfrage die unter `shauth` definiert ist. Dazu später mehr.
-`routers.sh.service`verweist auf den zuständigen service *sh*. Dies ist hier notwendig weil 2 services existerien.
-6. Der *service* `sh` zeigt auf den zuständigen Port innerhalb des Docker Images.  *2424* ist der Websocket Port. Diese Angabe ist immer dann notwendig, wenn ein Container mehr als einen Port freigibt.
+6. `routers.sh.service`verweist auf den zuständigen service *sh*. Dies ist hier notwendig, weil 2 services existieren.
+7. Der *service* `sh` zeigt auf den zuständigen Port innerhalb des Docker Images.  *2424* ist der Websocket Port. Diese Angabe ist immer dann notwendig, wenn ein Container mehr als einen Port freigibt.
  > Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die Beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
 
 ```
@@ -262,8 +262,8 @@ Und noch einmal im Detail:
       - "traefik.http.routers.shadmin.service=shadmin"
       - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
 ```
-Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen. Mit 2 wesentlichen Unterschieden. 
- * In der *rule* Zeile fehlt die *Path* Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet alles was ins Stammverzeichnis der Domain geht gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
+Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen, mit 2 wesentlichen Unterschieden. 
+ * In der *rule* Zeile fehlt die *Path* Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe, desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet: alles was ins Stammverzeichnis der Domain geht, gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
  * Der *service* `shadmin` zeigt auf Port *8383* - der Port des Admin Interfaces.
 
 ```
@@ -273,10 +273,10 @@ Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen. Mit 2 wesentlic
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
       - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
-Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
+Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt, auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren, würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth*, welches entsprechende Dienste einbindet.
 1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
 2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
-3. *removeheader* entfehrnt die auth Header bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
+3. *removeheader* entfernt die auth Header, bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
 
 ```
       # smartVISU web interface "https://<your.domain.tld>/smartvisu/"
@@ -288,8 +288,8 @@ Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *dige
       - "traefik.http.routers.sv.middlewares=shauth"
       - "traefik.http.services.sv.loadbalancer.server.port=80"
 ```
-Zuletzt der smartVISU Part. Da der String *Host & Path* noch mal länger ist als die entsprechenden Definitionen für das Admin Interface und den Websocket hat dieser die höchste Priorität. *Pathprefix* gilt für den Subpath `smartvisu` und alle darunter. Im Gegensatz zu *Path* welches sich nur auf den definierten Pfad und nicht auf Unterpfade bezieht.
- > Beachte: Die Zeile `traefik.http.routers.sv.service=sv` wäre nicht verkehrt, ist aber nicht notwendig, da für diesen Container nur ein service definiert ist. Da der php Container nur den Port 80 freigibt ist die Zeile `traefik.http.services.sv.loadbalancer.server.port=80` eigentlich auch nicht notwendig.
+Zuletzt der smartVISU Part. Da der String *Host & Path* noch mal länger ist als die entsprechenden Definitionen für das Admin Interface und den Websocket, hat dieser die höchste Priorität. *Pathprefix* gilt für den Subpath `smartvisu` und alle darunter. Im Gegensatz zu *Path*, welches sich nur auf den definierten Pfad und nicht auf Unterpfade bezieht.
+ > Beachte: Die Zeile `traefik.http.routers.sv.service=sv` wäre nicht verkehrt, ist aber nicht notwendig, da für diesen Container nur ein service definiert ist. Da der php Container nur den Port 80 freigibt, ist die Zeile `traefik.http.services.sv.loadbalancer.server.port=80` eigentlich auch nicht notwendig.
 
 ## ...und los
 
