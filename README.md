@@ -239,7 +239,7 @@ Und noch einmal im Detail:
       - "traefik.http.services.sh.loadbalancer.server.port=2424"
 ```
 1. Zuerst wird der Entrypoint festgelegt. Der Websocket hört also nur auf Port *443*.
-2. Danach wird der Host inklusive Pfad definiert. Alle Anfragen an das Stammverzeichnis (keine Sub-Pfade) der Domain `<your.domain.tld>` (Bitte durch die eigene Domain ersetzen) werden an diesen Container weitergeleitet.
+2. Danach wird der Host inklusive Pfad definiert. Alle Anfragen an das Stammverzeichnis (keine Sub-Pfade) der Domain `<your.domain.tld>` werden an diesen Container weitergeleitet.
 3. Verschlüsselung wird aktiviert.
 4. Als Zertifikatprovider wird letsencrypt ausgewählt.
 5. Die *middlewares* Zeile aktiviert die Passwortabfrage die unter `shauth` definiert ist. Dazu später mehr.
@@ -258,9 +258,8 @@ Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über d
       - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
 ```
 Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen. Mit 2 wesentlichen Unterschieden. 
- * In der *rule* Zeile fehlt die Path Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet alles was ins Stammverzeichnis der Domain geht gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
- * Der *service* `shadmin` zeigt auf Port *8383*. Der Port des Admin Interfaces.
-Das der Zielport unterschiedlich ist, ist offensichtlich aber auch die Path angabe hinter dem HOST fehlt. 
+ * In der *rule* Zeile fehlt die *Path* Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet alles was ins Stammverzeichnis der Domain geht gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
+ * Der *service* `shadmin` zeigt auf Port *8383* - der Port des Admin Interfaces.
 
 ```
       # digestauth Example: user="test", pw="test" <- unbedingt ändern!
@@ -269,9 +268,9 @@ Das der Zielport unterschiedlich ist, ist offensichtlich aber auch die Path anga
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
       - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
-Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für digestauth entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt, auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funkitioniert)  verschlüsselt kommunizieren würde auch ein basicauth reichen. Für höherwertige Anmeldeverfahren bietet Traefik `Forwardauth` welches entsprechende Dienste einbindet.
-1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getraennt.
-2. Der *realm* muss mit der Angabe beim *user* übereinstimmen.
+Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funkitioniert) verschlüsselt kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
+1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
+2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
 3. *removeheader* entfehrnt die auth Header bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
 
 ```
