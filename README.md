@@ -34,7 +34,7 @@ Um Traefik mit SmarthomeNG zu verbinden nutzen wir das selbsterzeugte Netzwerk `
 docker network create -d bridge traefik-net
 ```
 
-## ...und los
+## Die Konfig
 
 ### Die Traefik Konfiguration
 
@@ -144,7 +144,8 @@ Statt `web`und `websecure` könnte man auch `http` bzw. `https` als Namen wähle
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
 ```
 Die Let's Encrypt Konfiguration.
-Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch aktivieren der `caserver` Zeile leitet man die Zertifikat Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man aber erkennen ob alles funktioniert. Für den regulären Betrieb muss man die Zeile natürlich auskommentieren.
+
+Da Let's Encrypt [Rate Limits](https://letsencrypt.org/de/docs/rate-limits/) hat, empfielt es sich die Konfig erst mal auszuprobieren. Durch aktivieren der `caserver` Zeile leitet man die Zertifikat Anfragen an den Staging Server um und kann erst mal in Ruhe testen. Die gelieferten Zertifikate werden dann aber als ungültig ausgewiesen. An den Zertfifikatdetails kann man aber erkennen ob alles funktioniert. Für den regulären Betrieb muss die Zeile natürlich wieder auskommentiert werden.
 Ich habe mich für die *TLS Challenge* entschieden, da hierdurch die Kommunikation mit Let's Encrypt ebenfalls verschlüsselt abläuft und ich nur den Port 443 ins Netz öffnen muss. Darüber hinaus gibt es noch die *http Challenge* und die *dns Challenge*.
 
 
@@ -272,7 +273,7 @@ Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen. Mit 2 wesentlic
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
       - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
-Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
+Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
 1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
 2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
 3. *removeheader* entfehrnt die auth Header bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
@@ -287,8 +288,14 @@ Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für
       - "traefik.http.routers.sv.middlewares=shauth"
       - "traefik.http.services.sv.loadbalancer.server.port=80"
 ```
-Zuletzt der smartVISU Part. Da der String *Host & Path* noch mal länger ist hat dieser die höchste Priorität. *Pathprefix* gilt für den Subpath `smartvisu` und alle darunter. Im Gegensatz zu *Path* welches sich nur auf den definierten Pfad und nicht auf Unterpfade bezieht.
+Zuletzt der smartVISU Part. Da der String *Host & Path* noch mal länger ist als die entsprechenden Definitionen für das Admin Interface und den Websocket hat dieser die höchste Priorität. *Pathprefix* gilt für den Subpath `smartvisu` und alle darunter. Im Gegensatz zu *Path* welches sich nur auf den definierten Pfad und nicht auf Unterpfade bezieht.
  > Beachte: Die Zeile `traefik.http.routers.sv.service=sv` wäre nicht verkehrt, ist aber nicht notwendig, da für diesen Container nur ein service definiert ist. Da der php Container nur den Port 80 freigibt ist die Zeile `traefik.http.services.sv.loadbalancer.server.port=80` eigentlich auch nicht notwendig.
+
+## ...und los
+
+Jetzt startest du die Container.
+ * Ins Verzeichnis `traefik` wechseln und `docker-compose up -d` ausführen.
+ * Ins Verzeichnis `shng` wechseln und `docker-compose up -d` ausführen.
 
 Viel Erfolg
 Sascha
