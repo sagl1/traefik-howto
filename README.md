@@ -131,7 +131,7 @@ Zur Fehlersuche kann man das Loglevel auf `DEBUG` setzen. Später sollte man es 
 2. Sämtliche Verbindungen werden vom Entrypoint `web` auf den Entrypoint `websecure` umgeleitet.
 3. Dabei wird das Schema *https* verwendet. Somit werden aus http Verbindungen - https Verbindungen.
 4. Der Port für den Entrypoint Namens *websecure* ist *443*.
-Statt `web`und `websecure` könnte man auch `http` bzw. `https` wählen. Ich finde es aber aufgrund der Namensgleicheit zum *scheme* `https` gerade für Anfänger irreführend. Ausserdem behandeln wir ja später auch *ws* bzw. *wss* Verbindungen für den Websocket damit.
+Statt `web`und `websecure` könnte man auch `http` bzw. `https` als Namen wählen. Ich finde es aber aufgrund der Namensgleicheit zum *scheme* `https` gerade für Anfänger irreführend. Ausserdem behandeln wir ja später auch *ws* bzw. *wss* Verbindungen für den Websocket damit.
 
 ```
       # lets encrypt
@@ -245,7 +245,7 @@ Und noch einmal im Detail:
 5. Die *middlewares* Zeile aktiviert die Passwortabfrage die unter `shauth` definiert ist. Dazu später mehr.
 `routers.sh.service`verweist auf den zuständigen service *sh*. Dies ist hier notwendig weil 2 services existerien.
 6. Der *service* `sh` zeigt auf den zuständigen Port innerhalb des Docker Images.  *2424* ist der Websocket Port. Diese Angabe ist immer dann notwendig, wenn ein Container mehr als einen Port freigibt.
-Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
+ > Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
 
 ```
       # admin interface "https://<your.domain.tld>/admin/"
@@ -268,7 +268,7 @@ Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen. Mit 2 wesentlic
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
       - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
-Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funkitioniert) verschlüsselt kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
+Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth* welches entsprechende Dienste einbindet.
 1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
 2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
 3. *removeheader* entfehrnt die auth Header bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
@@ -284,8 +284,7 @@ Die *middleware* `shauth` legt den Passwortschutz festgelegt. Ich habe mich für
       - "traefik.http.services.sv.loadbalancer.server.port=80"
 ```
 Zuletzt der smartVISU Part. Da der String *Host & Path* noch mal länger ist hat dieser die höchste Priorität. *Pathprefix* gilt für den Subpath `smartvisu` und alle darunter. Im Gegensatz zu *Path* welches sich nur auf den definierten Pfad und nicht auf Unterpfade bezieht.
-Beachte: Die Zeile `traefik.http.routers.sv.service=sv` wäre nicht verkehrt, ist aber nicht notwendig, da für diesen Container nur ein service definiert ist. Da der php Container nur den Port 80 freigibt ist die Zeile `traefik.http.services.sv.loadbalancer.server.port=80` eigentlich auch nicht notwendig.
+ > Beachte: Die Zeile `traefik.http.routers.sv.service=sv` wäre nicht verkehrt, ist aber nicht notwendig, da für diesen Container nur ein service definiert ist. Da der php Container nur den Port 80 freigibt ist die Zeile `traefik.http.services.sv.loadbalancer.server.port=80` eigentlich auch nicht notwendig.
 
-Viel Spaß beim ausprobieren.
+Viel Erfolg
 Sascha
-
