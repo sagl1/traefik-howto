@@ -36,7 +36,7 @@ docker network create -d bridge traefik-net
 
 ## ...und los
 
-### Die Treafik Konfiguration
+### Die Traefik Konfiguration
 
 Zuerst öffnen wir die Datei `traefik/docker-compose.yaml` mit einem Editor deiner Wahl und kopieren folgenden Inhalt hinein:
 ```
