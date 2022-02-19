@@ -115,9 +115,9 @@ Zur Fehlersuche kann man das Loglevel auf `DEBUG` setzen. Später sollte man es 
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik-net"
 ```
-Die dynamsiche Traefik Konfig wird später aus Docker Labels der Container bezogen.
-Es muss explizit für jeden Container aktiviert werden.
-Die relevanten Container sind am `traefik-net` angebunden.
+1. Die dynamsiche Traefik Konfig wird später aus Docker Labels der Container bezogen.
+2. Es muss explizit für jeden Container aktiviert werden.
+3. Die relevanten Container sind am `traefik-net` angebunden.
 
 ```
       # entrypoints
@@ -127,10 +127,11 @@ Die relevanten Container sind am `traefik-net` angebunden.
       - "--entrypoints.websecure.address=:443"
 
 ```
-Erster Entrypoint ist Port *80* und bekommt den Namen *Web*.
-Sämtliche Verbindungen werden vom Entrypoint *web* auf den Entrypoint *websecure* umgeleitet.
-Dabei wird das Schema *https* verwendet. Somit werden aus http - Verbindungen https Verbindungen.
-Der Port für den Entrypoint Namens *websecure* ist *443*.
+1. Erster Entrypoint ist Port *80* und bekommt den Namen `web`.
+2. Sämtliche Verbindungen werden vom Entrypoint `web` auf den Entrypoint `websecure` umgeleitet.
+3. Dabei wird das Schema *https* verwendet. Somit werden aus http Verbindungen - https Verbindungen.
+4. Der Port für den Entrypoint Namens *websecure* ist *443*.
+Statt `web`und `websecure` könnte man auch `http` bzw. `https` wählen. Ich finde es aber aufgrund der Namensgleicheit zum *scheme* `https` gerade für Anfänger irreführend. Ausserdem behandeln wir ja später auch *ws* bzw. *wss* Verbindungen für den Websocket damit.
 
 ```
       # lets encrypt
