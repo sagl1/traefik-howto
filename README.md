@@ -18,7 +18,7 @@ Server ins Internet zu stellen ist immer ein Sicherheitsrisiko. Die verwendete S
 
 ## Vorbereitungen
 
-Erst einmal erstellen wir eine Verzeichnisstruktur:
+Erst einmal erstellst du die Verzeichnisstruktur:
 ```
 mkdir workdir
 cd workdir
