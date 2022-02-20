@@ -153,7 +153,7 @@ Ich habe mich für die *TLS Challenge* entschieden, da hierdurch die Kommunikati
       # Traefik dashboard "http://<Dockerhost>:8080/"
       - "--api.insecure=true"
 ```
-Dies aktiviert das Traefik Dashboard. Dort kann man die aktive Konfiguration bzw. den Status der Services einsehen.
+Dies aktiviert das Traefik Dashboard. Dort kann man die aktive Konfiguration bzw. den Status der Services einsehen. Hilft auch bei der Fehlersuche...
 
 ***
 
@@ -262,7 +262,7 @@ Und noch einmal im Detail:
       - "traefik.http.routers.shadmin.service=shadmin"
       - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
 ```
-Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen, mit 2 wesentlichen Unterschieden. 
+Dieser Abschnitt ist vergleichbar zum vorherigen, mit 2 wesentlichen Unterschieden:
  * In der *rule* Zeile fehlt die *Path* Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe, desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet: alles was ins Stammverzeichnis der Domain geht, gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
  * Der *service* `shadmin` zeigt auf Port *8383* - der Port des Admin Interfaces.
 
@@ -273,7 +273,7 @@ Dieser Abschnitt ist grundsätzlich vergleichbar zum vorherigen, mit 2 wesentlic
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
       - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
-Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier grundsätzlich eine Verschlüsselung des Passwortes erfolgt, auch wenn die Verbindung nicht verschlüsselt ist. Da wir hier (wenn alles funktioniert) grundsätzlich verschlüsselt via *https* kommunizieren, würde auch ein *basicauth* reichen. Für höherwertige Anmeldeverfahren bietet Traefik *forwardauth*, welches entsprechende Dienste einbindet.
+Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier eine Verschlüsselung des Passwortes erfolgt, auch wenn die Verbindung nicht verschlüsselt ist. Da wir (wenn alles funktioniert) verschlüsselt via *https* kommunizieren, würde auch ein *basicauth* reichen.
 1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
 2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
 3. *removeheader* entfernt die auth Header, bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
@@ -297,9 +297,16 @@ Jetzt startest du die Container.
  * Ins Verzeichnis `traefik` wechseln und `docker-compose up -d` ausführen.
  * Ins Verzeichnis `shng` wechseln und `docker-compose up -d` ausführen.
 
+Ein paar Minuten warten bis alles soweit ist.
+
 ## Funktionierts?
 
-
+Schauen wir mal ob alles funktioniert:
+ * Alles grün auf dem Traefik Dashboard? Tauchen die gewünschten Router und Services hier auf? `http://<Dockerhost>:8080/`
+ * Funktioniert das Admin Interface? `https://<your.domain.tld>/admin/system/config`
+   - Hier scheint es noch einen Bug in Verbindung mit Reverse Proxys zu geben. Geht man auf die Seite `https://<your.domain.tld>/admin/system/systemproperties` kommt man durch Auswahl eines anderen Links auf der Seite nicht weiter. Unglücklicherweise ist das auch die Satndardstartseite des Admin-Interfaces. Als Workaround habe ich einen *Deeplink* gewählt.
+ * Wie siehts mit smartVISU aus? `https://<your.domain.tld>/smartvisu/`
+   - Hier muss in der Konfiguration noch der Treiber auf `SmartHomeNG new` gestellt werden. Weitere Einstellungen braucht es nicht, wenn man via Reverse Proxy auf die Website zugreift.
 
 Viel Erfolg
 Sascha
