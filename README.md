@@ -188,22 +188,15 @@ services:
       - "traefik.http.routers.sh.service=sh"
       - "traefik.http.services.sh.loadbalancer.server.port=2424"
       
-      # admin interface "https://<your.domain.tld>/admin/"
-      - "traefik.http.routers.shadmin.entrypoints=websecure"
-      - "traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)"
-      - "traefik.http.routers.shadmin.tls=true"
-      - "traefik.http.routers.shadmin.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.shadmin.middlewares=shauth"
-      - "traefik.http.routers.shadmin.service=shadmin"
-      - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
-      
       # digestauth Example: user="test", pw="test" <- unbedingt ändern!
       # HINT: Generate Hash with echo -n "USER:REALM:PASSWORD" | md5sum
       - "traefik.http.middlewares.shauth.digestauth.users=test:SHNG:2eb7c3ae89f6812c8008aef4df7dc364"
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
-      - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
-    volumes:
+   volumes:
       - ./volumes/shng:/mnt
+    ports:
+      # SmarthomNG Admin Interface "http://<Dockerhost>:8383/"
+      - "8383:8383"
     networks:
       - traefik-net
 
@@ -218,8 +211,7 @@ services:
       
       # smartVISU web interface "https://<your.domain.tld>/smartvisu/"
       - "traefik.http.routers.sv.entrypoints=websecure"
-      #- "traefik.http.routers.sv.rule=Host(`<your.domain.tld>`) && PathPrefix(`/smartvisu`)"
-      - "traefik.http.routers.sv.rule=Host(`sh.thi0n.de`) && PathPrefix(`/smartvisu`)"
+      - "traefik.http.routers.sv.rule=Host(`<your.domain.tld>`) && PathPrefix(`/smartvisu`)"
       - "traefik.http.routers.sv.tls=true"
       - "traefik.http.routers.sv.tls.certresolver=letsencrypt"
       - "traefik.http.routers.sv.middlewares=shauth"
@@ -253,30 +245,24 @@ Und noch einmal im Detail:
  > Hinweis: `sh` ist ein frei definierter Name des Routers und des Service. Über die Namensgleicheit wird keine Beziehung zwischen Router und Service hergestellt. Die Namen könnten auch völlig unterschiedlich gewählt werden. Die Beziehung zwischen beiden stellt die Zeile `traefik.http.routers.sh.service=sh` her.
 
 ```
-      # admin interface "https://<your.domain.tld>/admin/"
-      - "traefik.http.routers.shadmin.entrypoints=websecure"
-      - "traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)"
-      - "traefik.http.routers.shadmin.tls=true"
-      - "traefik.http.routers.shadmin.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.shadmin.middlewares=shauth"
-      - "traefik.http.routers.shadmin.service=shadmin"
-      - "traefik.http.services.shadmin.loadbalancer.server.port=8383"
-```
-Dieser Abschnitt ist vergleichbar zum vorherigen, mit 2 wesentlichen Unterschieden:
- * In der *rule* Zeile fehlt die *Path* Angabe. Hintergrund ist folgender: Traefik berechnet die Standardpriorität aus der Stringlänge Host & Path. Die Annahme dahinter: Je länger die Angabe, desto spezifischer. Die Angabe von ``traefik.http.routers.sh.rule=Host(`<your.domain.tld>`) && Path(`/`)`` bedeutet: alles was ins Stammverzeichnis der Domain geht, gehört zum Websocket. Alles andere geht an ``traefik.http.routers.shadmin.rule=Host(`<your.domain.tld>`)``.
- * Der *service* `shadmin` zeigt auf Port *8383* - der Port des Admin Interfaces.
-
-```
       # digestauth Example: user="test", pw="test" <- unbedingt ändern!
       # HINT: Generate Hash with echo -n "USER:REALM:PASSWORD" | md5sum
       - "traefik.http.middlewares.shauth.digestauth.users=test:SHNG:2eb7c3ae89f6812c8008aef4df7dc364"
       - "traefik.http.middlewares.shauth.digestauth.realm=SHNG"
-      - "traefik.http.middlewares.shauth.digestauth.removeheader=true"
 ```
 Die *middleware* `shauth` legt den Passwortschutz fest. Ich habe mich für *digestauth* entschieden, weil hier eine Verschlüsselung des Passwortes erfolgt, auch wenn die Verbindung nicht verschlüsselt ist. Da wir (wenn alles funktioniert) verschlüsselt via *https* kommunizieren, würde auch ein *basicauth* reichen.
 1. Hier wird der User `test` mit Passwort `test` festgelegt. Mehrere User werden durch Komma getrennt.
 2. Der *realm*, hier `SHNG`, muss mit der Angabe beim *user* übereinstimmen.
-3. *removeheader* entfernt die auth Header, bevor die Anfrage an den Service geleitet wird. Ohne diese Angabe gab es Probleme mit dem Admin Interface.
+
+```
+    ports:
+      # SmarthomNG Admin Interface "http://<Dockerhost>:8383/"
+      - "8383:8383"
+```
+Der Port *8383* wird für das Admin Interface geöffnet. Dieses ist unter `http://<Dockerhost>:8383/`erreichbar. Ich habe mich dagegen entschieden, das Admin Interface Richtung Internet zu öffnen. Aus folgenden Gründen:
+ * Es verhält sich fehlerhaft hinter dem Reverse Proxy. Z.B. kann man nicht die Startseite verlassen.
+ * Es harmoniert nicht mit *Basic auth* oder *Digest auth*. Alle meine Versuche diesbezüglich sind gescheitert.
+ * Aus Sicherheitsgründen. 
 
 ```
       # smartVISU web interface "https://<your.domain.tld>/smartvisu/"
@@ -303,10 +289,9 @@ Ein paar Minuten warten bis alles soweit ist.
 
 Schauen wir mal ob alles funktioniert:
  * Alles grün auf dem Traefik Dashboard? Tauchen die gewünschten Router und Services hier auf? `http://<Dockerhost>:8080/`
- * Funktioniert das Admin Interface? `https://<your.domain.tld>/admin/system/config`
-   - Hier scheint es noch einen Bug in Verbindung mit Reverse Proxys zu geben. Geht man auf die Seite `https://<your.domain.tld>/admin/system/systemproperties` kommt man durch Auswahl eines anderen Links auf der Seite nicht weiter. Unglücklicherweise ist das auch die Satndardstartseite des Admin-Interfaces. Als Workaround habe ich einen *Deeplink* gewählt.
+ * Funktioniert das Admin Interface? `http://<Dockerhost>:8383/`
  * Wie siehts mit smartVISU aus? `https://<your.domain.tld>/smartvisu/`
-   - Hier muss in der Konfiguration noch der Treiber auf `SmartHomeNG new` gestellt werden. Weitere Einstellungen braucht es nicht, wenn man via Reverse Proxy auf die Website zugreift.
+   - Hier muss in der Konfiguration noch der Treiber auf `SmartHomeNG new` eingestellt werden. Weitere Einstellungen braucht es nicht, wenn man via Reverse Proxy auf die Website zugreift.
 
 Viel Erfolg
 Sascha
