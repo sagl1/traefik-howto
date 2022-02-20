@@ -1,9 +1,5 @@
 version: "3"
 
-#https://doc.traefik.io/traefik/
-#https://letsencrypt.org/de/
-
-# docker network create -d bridge traefik-net
 networks:
   traefik-net:
     external: true
@@ -29,8 +25,7 @@ services:
       
       # lets encrypt
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-#      - "--certificatesresolvers.letsencrypt.acme.email=<your@email.tld>"
-      - "--certificatesresolvers.letsencrypt.acme.email=sglaess@gmx.de"
+      - "--certificatesresolvers.letsencrypt.acme.email=<your@email.tld>"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       
       # Traefik dashboard "http://<yourhost>:8080/"
