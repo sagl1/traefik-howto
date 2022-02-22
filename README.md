@@ -10,11 +10,11 @@ Server ins Internet zu stellen ist immer ein Sicherheitsrisiko. Die verwendete S
 
 ## Voraussetzungen
 
-1. Ein Rechner bzw. Server (`<DockerHOST>`) auf dem Docker und Docker-Compose laufen.
+1. Ein Rechner bzw. Server (`<DockerHOST>`) auf dem [Docker](https://docs.docker.com/get-docker/) und [Docker-Compose](https://docs.docker.com/compose/install/) laufen.
 2. `<DockerHOST>` muss aus dem Internet auf Port 443 erreichbar sein. Vorgeschaltete Router oder Firewalls sind entsprechend konfiguriert.
-3. Eine Domain (`<your.domain.tld>`), die auf `<DockerHOST>` zeigt. Grundsätzlich sind hier auch dynamische Domains \(z.B. von DynDNS\) möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
+3. Eine Domain (`<your.domain.tld>`), die auf `<DockerHOST>` zeigt. Grundsätzlich sind hier auch dynamische Domains \(z.B. von [DynDNS](https://account.dyn.com/)\) möglich, aber das kann zu Problemen bei der Zertifikatsbeschaffung führen.
 4. Eine gültige E-Mail Adresse (`<your.email.tld>`).
-5. Grundverständnis für docker-compose und YAML Syntax setze ich Voraus.
+5. Grundverständnis für [docker-compose](https://docs.docker.com/compose/gettingstarted/) und [YAML](https://de.wikipedia.org/wiki/YAML) Syntax setze ich Voraus.
 
 ## Vorbereitungen
 
