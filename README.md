@@ -163,9 +163,6 @@ Als nächstes öffnest du die Datei `shng/docker-compose.yaml` mit einem Editor 
 ```
 version: "3"
 
-#https://www.smarthomeng.de/
-#https://www.smartvisu.de/
-
 networks:
   traefik-net:
     external: true
